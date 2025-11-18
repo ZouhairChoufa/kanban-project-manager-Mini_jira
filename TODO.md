@@ -1,6 +1,0 @@
-- [ ] Remove comments from src/js/modules/auth.js
-- [ ] Remove comments from src/js/modules/projects.js
-- [ ] Remove comments from src/js/modules/profile.js
-- [ ] Remove comments from src/js/modules/kanban.js
-- [ ] Remove comments from src/js/modules/dashboard.js
-- [ ] Remove comments from src/js/utils.js
