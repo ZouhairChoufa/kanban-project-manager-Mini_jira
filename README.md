@@ -1,91 +1,119 @@
-Projet TaskFlow Kanban
+# TaskFlow Kanban
 
-Ceci est une application web de type tableau Kanban, simple et modulaire, alimentée par Firebase. Elle permet aux utilisateurs de créer des comptes, de gérer des projets et de suivre des tâches à travers les colonnes "To Do", "In Progress", et "Done".
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
+[![Node.js Version](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 
-Fonctionnalités
+A modern, modular Kanban board web application powered by Firebase. Allows users to create accounts, manage projects, and track tasks across "To Do", "In Progress", and "Done" columns. Ideal for collaborative project management.
 
-Authentification : Inscription et connexion des utilisateurs (Firebase Auth).
+## 🚀 Features
 
-Gestion de Projets :
+### Authentication
+- User registration and login (Firebase Auth).
+- Password reset.
 
-Créer des projets avec un nom, une description et un code d'accès secret.
+### Project Management
+- Create projects with name, description, and secret access code.
+- Access projects by providing the access code.
 
-Accéder à un projet en fournissant son code d'accès.
+### Kanban Board
+- Dedicated Kanban board for each project.
+- Full CRUD for tasks (Create, Read, Update, Delete).
+- Assign tasks to users.
+- Drag and drop to change task status.
 
-Tableau Kanban :
+### Analytics Dashboard
+- Project statistics on average completion time.
+- Workload visualization per person (assigned tasks).
 
-Pour chaque projet, un tableau Kanban dédié.
+### Profile Management
+- Update username.
+- Upload profile picture (Firebase Storage).
 
-CRUD (Créer, Lire, Mettre à jour, Supprimer) complet pour les tâches.
+### Real-time Updates
+- Uses Firestore for instant reflection of all changes.
 
-Assigner des tâches aux utilisateurs.
+## 🛠️ Technologies Used
 
-Glisser-déposer (Drag and drop) pour changer le statut des tâches.
+- **Frontend**: HTML, CSS (Tailwind CSS), JavaScript (modular)
+- **Backend**: Node.js, Express
+- **Database**: Firebase (Firestore, Auth, Storage)
+- **Tools**: Vite for Tailwind CSS
 
-Tableau de Bord Analytique :
+## 📁 Project Structure
 
-Statistiques par projet sur le temps de complétion moyen.
-
-Visualisation de la charge de travail par personne (tâches assignées).
-
-Gestion de Profil :
-
-Mettre à jour le nom d'utilisateur.
-
-Télécharger une photo de profil (Firebase Storage).
-
-Réinitialiser le mot de passe.
-
-Mises à jour en temps réel : Utilise Firestore pour refléter tous les changements instantanément.
-
-Structure du Projet (Modulaire)
-
-L'application est organisée en modules JavaScript pour une meilleure lisibilité et maintenance.
-
+```
 TaskFlow-Kanban/
 ├── .gitignore
 ├── README.md
-├── index.html          (Structure HTML principale)
-├── package.json        (Dépendances du serveur Node.js)
-├── server.js           (Serveur Node.js/Express pour servir les fichiers)
+├── index.html          # Main HTML structure
+├── package.json        # Node.js server dependencies
+├── server.js           # Node.js/Express server to serve files
 └── src/
     ├── css/
-    │   └── styles.css  (Styles CSS personnalisés)
+    │   └── style.css   # Custom CSS styles
     └── js/
-        ├── config.js         (Configuration de Tailwind CSS)
-        ├── main.js           (Point d'entrée, "chef d'orchestre")
-        ├── utils.js          (Fonctions utilitaires: toasts, avatars, etc.)
+        ├── config.js         # Tailwind CSS configuration
+        ├── main.js           # Entry point, "conductor"
+        ├── utils.js          # Utility functions: toasts, avatars, etc.
         ├── core/
-        │   ├── dom.js        (Sélecteurs DOM)
-        │   ├── firebase.js   (Initialisation de Firebase)
-        │   └── state.js      (Gestion de l'état global)
+        │   ├── dom.js        # DOM selectors
+        │   ├── firebase.js   # Firebase initialization
+        │   └── state.js      # Global state management
         └── modules/
-            ├── auth.js       (Logique d'authentification)
-            ├── dashboard.js  (Logique du tableau de bord)
-            ├── kanban.js     (Logique du tableau Kanban)
-            ├── profile.js    (Logique du modal de profil)
-            └── projects.js   (Logique de la page des projets)
+            ├── auth.js       # Authentication logic
+            ├── dashboard.js  # Dashboard logic
+            ├── kanban.js     # Kanban board logic
+            ├── profile.js    # Profile modal logic
+            └── projects.js   # Projects page logic
+```
 
+## 🚀 Installation and Launch
 
-Comment Lancer (Localement)
+### Prerequisites
+- Node.js (version 18 or higher) installed on your machine.
 
-Ce projet utilise un simple serveur Node.js/Express pour servir les fichiers statiques.
+### Steps
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/ZouhairChoufa/kanban-project-manager-Mini_jira.git
+   cd kanban-project-manager-Mini_jira
+   ```
 
-Prérequis : Assurez-vous d'avoir Node.js installé sur votre machine.
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-Installer les dépendances :
-Ouvrez un terminal dans le dossier racine du projet (TaskFlow-Kanban/) et exécutez :
+3. **Start the server**:
+   ```bash
+   npm start
+   ```
 
-npm install
+4. **Open the application**:
+   Open your browser and go to [http://localhost:3000](http://localhost:3000).
 
+## 📖 Usage
 
-(Cela n'installera que express.)
+- Create an account or log in.
+- Create a new project with an access code.
+- Add tasks to the Kanban board.
+- Assign tasks and drag them between columns.
+- View statistics on the dashboard.
 
-Démarrer le serveur :
-Dans le même terminal, exécutez :
+## 🤝 Contributing
 
-npm start
+Contributions are welcome! Please follow these steps:
 
+1. Fork the project.
+2. Create a branch for your feature (`git checkout -b feature/AmazingFeature`).
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4. Push to the branch (`git push origin feature/AmazingFeature`).
+5. Open a Pull Request.
 
-Ouvrir l'application :
-Ouvrez votre navigateur et allez à l'adresse http://localhost:3000.
+## 📄 License
+
+This project is licensed under ISC. See the [LICENSE](LICENSE) file for more details.
+
+## 📞 Contact
+
+For any questions or suggestions, open an issue on GitHub or contact the author.
