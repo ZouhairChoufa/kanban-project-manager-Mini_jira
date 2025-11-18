@@ -84,12 +84,15 @@ TaskFlow-Kanban/
    npm install
    ```
 
-3. **Start the server**:
+3. **Configure Firebase**:
+   Before starting the server, update the `firebaseConfig` object in `src/js/core/firebase.js` with your Firebase project credentials. Replace the placeholder values (e.g., "YOUR_API_KEY") with your actual Firebase configuration details obtained from the Firebase Console.
+
+4. **Start the server**:
    ```bash
    npm start
    ```
 
-4. **Open the application**:
+5. **Open the application**:
    Open your browser and go to [http://localhost:3000](http://localhost:3000).
 
 ##  Usage
