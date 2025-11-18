@@ -1,0 +1,22 @@
+{
+  "name": "kanban-firebase-app",
+  "version": "1.0.0",
+  "description": "Un projet de tableau Kanban avec Firebase et une interface modulaire.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "kanban",
+    "firebase",
+    "javascript"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.17",
+    "express": "^4.19.2",
+    "tailwindcss": "^4.1.17"
+  }
+}
