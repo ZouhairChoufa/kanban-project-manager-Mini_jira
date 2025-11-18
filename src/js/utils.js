@@ -9,6 +9,15 @@ export function setLoading(loading) {
     }
 }
 
+export function setFormSaving(saving) {
+    if (dom.saveTaskBtn) {
+        dom.saveTaskBtn.disabled = saving;
+    }
+    if (dom.saveBtnText) {
+        dom.saveBtnText.textContent = saving ? 'Sauvegarde...' : 'Sauvegarder';
+    }
+}
+
 export function showToast({ title, description, variant = "default" }) {
     const toast = document.createElement('div');
     toast.className = `p-4 rounded-md shadow-lg border max-w-sm animate-fade-in ${
@@ -47,7 +56,7 @@ export function showToast({ title, description, variant = "default" }) {
 export function createUserAvatar(user, classes = '') {
     const avatar = document.createElement('div');
     avatar.className = `flex items-center justify-center rounded-full bg-app-primary text-white font-medium ${classes}`;
-    
+
     if (user.photoURL) {
         const img = document.createElement('img');
         img.src = user.photoURL;
@@ -55,11 +64,23 @@ export function createUserAvatar(user, classes = '') {
         img.className = 'w-full h-full rounded-full object-cover';
         avatar.appendChild(img);
     } else {
-        const initials = (user.displayName || 'U').split(' ').map(n => n[0]).join('').toUpperCase();
+        const name = user.displayName || 'U';
+        const words = name.split(' ').filter(w => w.length > 0);
+        let initials;
+        if (words.length === 0) {
+            initials = 'U';
+        } else if (words.length === 1) {
+            initials = words[0][0];
+        } else if (words.length === 2) {
+            initials = words[0][0] + words[1][0];
+        } else {
+            initials = words[0][0] + words[words.length - 1][0];
+        }
+        initials = initials.toUpperCase();
         avatar.textContent = initials;
     }
-    
-    return avatar;
+
+    return avatar.outerHTML;
 }
 
 export function formatDate(timestamp) {
@@ -82,6 +103,22 @@ export function formatDateTime(timestamp) {
         hour: '2-digit',
         minute: '2-digit'
     });
+}
+
+export function formatRelativeTime(timestamp) {
+    if (!timestamp) return 'N/A';
+    const now = new Date();
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return 'À l\'instant';
+    if (minutes < 60) return `Il y a ${minutes} minute${minutes > 1 ? 's' : ''}`;
+    if (hours < 24) return `Il y a ${hours} heure${hours > 1 ? 's' : ''}`;
+    if (days < 7) return `Il y a ${days} jour${days > 1 ? 's' : ''}`;
+    return formatDate(timestamp); // Fallback to full date
 }
 
 export function debounce(func, wait) {
@@ -188,4 +225,27 @@ export function filterTasksByName(tasks, query) {
 export function filterTasksByCreator(tasks, creatorId) {
     if (!creatorId || creatorId === 'all') return tasks;
     return tasks.filter(t => t.creatorId === creatorId);
+}
+
+export function getFriendlyStorageError(error) {
+    const errorMessages = {
+        'storage/unauthorized': 'You do not have permission to upload files.',
+        'storage/canceled': 'Upload was canceled.',
+        'storage/quota-exceeded': 'Storage quota exceeded.',
+        'storage/invalid-format': 'Invalid file format.',
+        'storage/server-file-wrong-size': 'File size does not match expected size.',
+        'storage/object-not-found': 'File not found.',
+        'storage/bucket-not-found': 'Storage bucket not found.',
+        'storage/project-not-found': 'Project not found.',
+        'storage/invalid-checksum': 'File integrity check failed.',
+        'storage/retry-limit-exceeded': 'Maximum retry attempts exceeded.',
+        'storage/invalid-event-name': 'Invalid event name.',
+        'storage/invalid-url': 'Invalid URL.',
+        'storage/invalid-argument': 'Invalid argument.',
+        'storage/no-default-bucket': 'No default bucket configured.',
+        'storage/cannot-slice-blob': 'Cannot slice blob.',
+        'storage/server-error': 'Server error occurred.',
+        'storage/unknown': 'An unknown error occurred.'
+    };
+    return errorMessages[error.code] || error.message || 'An error occurred during upload.';
 }

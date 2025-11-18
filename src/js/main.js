@@ -1,14 +1,14 @@
 import { auth, onAuthStateChanged, signOut } from './core/firebase.js';
-import { 
-    state, 
-    updateCurrentUser, 
-    updateAllTasks, 
-    updateAllUsers, 
-    updateAllProjects, 
-    updateCurrentProjectId, 
-    updateHasTasksLoaded, 
-    updateHasUsersLoaded, 
-    updateHasProjectsLoaded 
+import {
+    state,
+    updateCurrentUser,
+    updateAllTasks,
+    updateAllUsers,
+    updateAllProjects,
+    updateCurrentProjectId,
+    updateHasTasksLoaded,
+    updateHasUsersLoaded,
+    updateHasProjectsLoaded
 } from './core/state.js';
 import * as dom from './core/dom.js';
 import { setLoading, showToast } from './utils.js';
@@ -62,7 +62,6 @@ async function handleLogout() {
         await signOut(auth);
         showToast({ title: "Logged Out", description: "You have been logged out." });
     } catch (error) {
-        console.error("Logout error:", error);
         showToast({ variant: "destructive", title: "Error", description: getFriendlyAuthError(error) });
     }
 }
