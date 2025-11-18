@@ -1,14 +1,13 @@
-// Fichier: src/js/config.js
 tailwind.config = {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Inter', 'sans-serif'], // Utilise Inter comme police par défaut
+                sans: ['Inter', 'sans-serif'],
             },
             colors: {
-                'app-background': '#F0F8FF', // Bleu très clair
-                'app-primary': '#A0D2EB',   // Bleu doux
-                'app-accent': '#FFB347',    // Orange clair
+                'app-background': '#F0F8FF',
+                'app-primary': '#A0D2EB',
+                'app-accent': '#FFB347',
             },
             keyframes: {
                 spin: {
@@ -31,7 +30,6 @@ tailwind.config = {
             },
         }
     },
-     // Plugin pour tronquer le texte (ex: .line-clamp-2)
     plugins: [
         function({ addUtilities }) {
             addUtilities({

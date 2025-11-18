@@ -1,12 +1,8 @@
-/* Fichier: src/css/styles.css */
-
-/* Dialog (Modal) backdrop */
 dialog::backdrop {
     background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(2px);
 }
 
-/* SVG Icons used in the app */
 .icon-loader {
     width: 1.25rem; height: 1.25rem; margin-right: 0.5rem; animation: spin 1s linear infinite;
 }
@@ -37,11 +33,9 @@ dialog::backdrop {
 .icon-upload-loader {
     width: 5rem; height: 5rem;
 }
-/* NEW: Project icons */
 .icon-back {
     width: 1.25rem; height: 1.25rem; margin-right: 0.5rem;
 }
 .icon-lock {
     width: 1.25rem; height: 1.25rem; margin-right: 0.5rem;
 }
-/* ** FIX: Suppression de l'accolade '}' en trop ** */

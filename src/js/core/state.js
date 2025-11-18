@@ -1,9 +1,5 @@
-// Fichier: src/js/core/state.js
-// Gère l'état global de l'application.
-
 export const STATUSES = ["To Do", "In Progress", "Done"];
 
-// L'état global unique
 export const state = {
     currentUser: null,
     allProjects: [],
@@ -15,13 +11,11 @@ export const state = {
     taskToDeleteId: null,
     isSubmitting: false,
     
-    // Statut de chargement
     hasTasksLoaded: false,
     hasUsersLoaded: false,
     hasProjectsLoaded: false,
 };
 
-// Fonctions "Mutator" pour mettre à jour l'état
 export function updateCurrentUser(user) {
     state.currentUser = user;
 }
