@@ -91,3 +91,4 @@ export const dashboardBackBtn = document.getElementById('dashboard-back-btn');
 export const dashboardProjectTitle = document.getElementById('dashboard-project-title');
 export const dashboardStatsKpi = document.getElementById('dashboard-stats-kpi');
 export const dashboardStatsWorkload = document.getElementById('dashboard-stats-workload');
+export const dashboardTaskDetails = document.getElementById('dashboard-task-details');

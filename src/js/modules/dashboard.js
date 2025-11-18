@@ -1,18 +1,13 @@
-// Fichier: src/js/modules/dashboard.js
-// Gère la logique pour le tableau de bord analytique.
-
 import { state } from '../core/state.js';
 import * as dom from '../core/dom.js';
 import { createUserAvatar } from '../utils.js';
 
-// --- INITIALISATION ---
 
 export function initDashboardListeners() {
     dom.showDashboardBtn.addEventListener('click', showDashboard);
     dom.dashboardBackBtn.addEventListener('click', hideDashboard);
 }
 
-// --- GESTION DE LA VUE ---
 
 function showDashboard() {
     dom.kanbanView.classList.add('hidden');
@@ -25,10 +20,8 @@ function hideDashboard() {
     dom.kanbanView.classList.remove('hidden');
 }
 
-// --- LOGIQUE DE CALCUL ---
 
 /**
- * Calcule toutes les statistiques pour le projet en cours.
  * @param {Array} tasks - state.allTasks
  * @param {Array} users - state.allUsers
  * @returns {object} Un objet contenant toutes les statistiques calculées.
@@ -38,7 +31,6 @@ function calculateStats(tasks, users) {
     const completedTasks = tasks.filter(t => t.status === 'Done');
     const tasksWithCompletionTime = completedTasks.filter(t => t.completedAt && t.createdAt);
 
-    // 1. Temps de complétion moyen
     let avgCompletionTime = "N/A";
     if (tasksWithCompletionTime.length > 0) {
         const totalDurationMs = tasksWithCompletionTime.reduce((sum, task) => {
@@ -49,7 +41,12 @@ function calculateStats(tasks, users) {
         avgCompletionTime = formatMillisToDuration(avgMs);
     }
 
-    // 2. Charge de travail par personne (basée sur l'assignation)
+    const accuracy = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
+
+    const todoTasks = tasks.filter(t => t.status === 'To Do');
+    const inProgressTasks = tasks.filter(t => t.status === 'In Progress');
+    const doneTasks = completedTasks;
+
     const workload = users.map(user => {
         const assignedTasks = tasks.filter(t => t.assigneeId === user.uid);
         const todo = assignedTasks.filter(t => t.status === 'To Do').length;
@@ -60,19 +57,22 @@ function calculateStats(tasks, users) {
             todo,
             inProgress,
         };
-    }).filter(u => u.total > 0) // Ne montre que les utilisateurs avec des tâches assignées
-      .sort((a, b) => b.total - a.total); // Trie par total
+    }).filter(u => u.total > 0) 
+      .sort((a, b) => b.total - a.total); 
 
     return {
         totalTasks,
         totalCompleted: completedTasks.length,
         avgCompletionTime,
+        accuracy,
+        todoTasks,
+        inProgressTasks,
+        doneTasks,
         workload,
     };
 }
 
 /**
- * Convertit des millisecondes en une chaîne lisible (ex: "2.5 jours").
  * @param {number} ms - Millisecondes
  * @returns {string}
  */
@@ -89,19 +89,12 @@ function formatMillisToDuration(ms) {
 }
 
 
-// --- RENDU HTML ---
-
-/**
- * Affiche les statistiques calculées dans le DOM.
- */
 function renderDashboard() {
     const stats = calculateStats(state.allTasks, state.allUsers);
     
-    // Titre du projet
     const project = state.allProjects.find(p => p.id === state.currentProjectId);
     dom.dashboardProjectTitle.textContent = project ? project.name : 'Dashboard';
 
-    // 1. Affiche les KPIs
     dom.dashboardStatsKpi.innerHTML = `
         <div class="bg-white p-6 rounded-lg shadow-sm border">
             <h4 class="text-sm font-medium text-gray-500 mb-1">Tâches Totales</h4>
@@ -115,9 +108,12 @@ function renderDashboard() {
             <h4 class="text-sm font-medium text-gray-500 mb-1">Temps de Complétion Moyen</h4>
             <p class="text-3xl font-bold text-gray-900">${stats.avgCompletionTime}</p>
         </div>
+        <div class="bg-white p-6 rounded-lg shadow-sm border">
+            <h4 class="text-sm font-medium text-gray-500 mb-1">Précision (Tâches Complétées)</h4>
+            <p class="text-3xl font-bold text-gray-900">${stats.accuracy}%</p>
+        </div>
     `;
 
-    // 2. Affiche la charge de travail
     if (stats.workload.length === 0) {
         dom.dashboardStatsWorkload.innerHTML = `<p class="text-gray-500">Aucune tâche n'est assignée pour ce projet.</p>`;
     } else {
@@ -143,4 +139,33 @@ function renderDashboard() {
             </div>
         `).join('');
     }
+
+    const renderTaskList = (tasks, title, colorClass) => {
+        if (tasks.length === 0) {
+            return `<div class="bg-white p-6 rounded-lg shadow-sm border">
+                <h4 class="text-lg font-semibold text-gray-800 mb-4">${title}</h4>
+                <p class="text-gray-500">Aucune tâche dans cette catégorie.</p>
+            </div>`;
+        }
+        return `<div class="bg-white p-6 rounded-lg shadow-sm border">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">${title}</h4>
+            <ul class="space-y-2">
+                ${tasks.map(task => {
+                    const assignee = state.allUsers.find(u => u.uid === task.assigneeId);
+                    return `<li class="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50">
+                        <span class="font-medium text-gray-800">${task.title}</span>
+                        <span class="text-sm text-gray-500">${assignee ? assignee.displayName : 'Non assigné'}</span>
+                    </li>`;
+                }).join('')}
+            </ul>
+        </div>`;
+    };
+
+    dom.dashboardStatsWorkload.insertAdjacentHTML('afterend', `
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            ${renderTaskList(stats.todoTasks, 'Tâches à Faire', 'text-blue-600')}
+            ${renderTaskList(stats.inProgressTasks, 'Tâches en Cours', 'text-orange-600')}
+            ${renderTaskList(stats.doneTasks, 'Tâches Terminées', 'text-green-600')}
+        </div>
+    `);
 }

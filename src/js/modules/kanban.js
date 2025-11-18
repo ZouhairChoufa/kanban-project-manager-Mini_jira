@@ -1,38 +1,26 @@
-// Fichier: src/js/modules/kanban.js
-// Gère toute la logique du tableau Kanban (affichage, tâches, drag-drop, modaux de tâches).
-
 import { db, collection, query, onSnapshot, doc, updateDoc, addDoc, deleteDoc, Timestamp } from '../core/firebase.js';
 import { state, STATUSES, updateAllTasks, updateDraggedTaskId, updateTaskToDeleteId, updateIsSubmitting, updateHasTasksLoaded } from '../core/state.js';
 import * as dom from '../core/dom.js';
-import { showToast, formatRelativeTime, createUserAvatar, setFormSaving, setLoading } from '../utils.js'; 
-// --- INITIALISATION ---
+import { showToast, formatRelativeTime, createUserAvatar, setFormSaving, setLoading } from '../utils.js';
 
-/**
- * Initialise tous les écouteurs d'événements pour le Kanban.
- */
 export function initKanbanListeners() {
-    // Boutons d'ajout de tâche
     dom.addTaskBtn.addEventListener('click', () => openTaskModal(null));
     dom.fabAddTask.addEventListener('click', () => openTaskModal(null));
     
-    // Filtres
     dom.filterNameInput.addEventListener('input', renderApp);
     dom.sortDateSelect.addEventListener('change', renderApp);
     dom.filterCreatorSelect.addEventListener('change', renderApp);
 
-    // Modal de Tâche
     dom.taskForm.addEventListener('submit', handleSubmitTask);
     dom.closeModalBtn.addEventListener('click', closeTaskModal);
     dom.cancelModalBtn.addEventListener('click', closeTaskModal);
     dom.deleteTaskBtn.addEventListener('click', () => openDeleteModal());
 
-    // Modal de Suppression
     dom.cancelDeleteBtn.addEventListener('click', closeDeleteModal);
     dom.confirmDeleteBtn.addEventListener('click', handleDeleteTask);
 }
 
 /**
- * Initialise le listener Firestore pour la collection de tâches du projet en cours.
  * @returns {Function} La fonction pour se désabonner (unsubscribe).
  */
 export function setupFirestoreListener() {
@@ -40,14 +28,12 @@ export function setupFirestoreListener() {
 
     const tasksCollectionPath = `/artifacts/mini-jira-kanban-board/public/data/projects/${state.currentProjectId}/tasks`;
     console.log(`Listening to Firestore at: ${tasksCollectionPath}`);
-    
     const tasksCollection = collection(db, tasksCollectionPath);
-    const q = query(tasksCollection); // Tri client-side
+    const q = query(tasksCollection);
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
         const tasks = snapshot.docs.map((doc) => {
             const data = doc.data();
-            // Normalise les données (gère les anciens et nouveaux noms de champs)
             const normalizedTask = {
                 id: doc.id,
                 title: data.title || data.titre || 'Untitled Task',
@@ -57,43 +43,34 @@ export function setupFirestoreListener() {
                 createdById: data.createdById || data.creePar_userId || '',
                 createdByUsername: data.createdByUsername || 'Unknown',
                 createdAt: data.createdAt || data.dateCreation || Timestamp.now(),
-                completedAt: data.completedAt || null, // Pour le dashboard
+                completedAt: data.completedAt || null,
             };
             if (normalizedTask.status === 'TODO') normalizedTask.status = 'To Do';
             if (normalizedTask.status === 'IN_PROGRESS') normalizedTask.status = 'In Progress';
             if (normalizedTask.status === 'DONE') normalizedTask.status = 'Done';
             return normalizedTask;
         });
-        
         updateAllTasks(tasks);
-        updateHasTasksLoaded(true); // Indique que les tâches sont chargées
+        updateHasTasksLoaded(true);
         renderApp();
-        setLoading(false); 
-        
+        setLoading(false);
     }, (error) => {
         console.error("Firestore error:", error);
         showToast({ variant: "destructive", title: "Erreur de base de données", description: "Impossible de charger les tâches pour ce projet."});
-        updateHasTasksLoaded(true); // Débloque même en cas d'erreur
+        updateHasTasksLoaded(true);
         renderApp();
-        setLoading(false); 
+        setLoading(false);
     });
-
     return unsubscribe;
 }
 
-// --- AFFICHAGE (RENDERING) ---
-
-/**
- * Fonction principale d'affichage du Kanban. Filtre, trie et affiche les tâches.
- */
 export function renderApp() {
     if (!state.currentProjectId || !state.hasTasksLoaded || !state.hasUsersLoaded) {
-        dom.kanbanBoard.innerHTML = ''; // Vide le tableau si les données ne sont pas prêtes
+        dom.kanbanBoard.innerHTML = ''; 
         dom.filterCreatorSelect.innerHTML = '<option value="all">Filter: All Creators</option>';
         return;
     }
     
-    // 1. Appliquer les filtres
     const nameFilter = dom.filterNameInput.value.toLowerCase();
     const creatorFilter = dom.filterCreatorSelect.value;
     
@@ -104,7 +81,6 @@ export function renderApp() {
         return nameMatch && creatorMatch;
     });
     
-    // 2. Appliquer le tri
     const sortOrder = dom.sortDateSelect.value;
     filteredTasks.sort((a, b) => {
         const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt || 0);
@@ -112,16 +88,12 @@ export function renderApp() {
         return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
     });
 
-    // 3. Afficher le tableau
     renderKanbanBoard(filteredTasks);
     
-    // 4. Mettre à jour le filtre des créateurs
     renderCreatorFilter();
 }
 
-/**
- * Affiche le filtre des créateurs en fonction des tâches actuelles.
- */
+
 function renderCreatorFilter() {
     const creators = state.allTasks.reduce((acc, task) => {
         if (task.createdById && !acc.has(task.createdById)) {
@@ -131,7 +103,6 @@ function renderCreatorFilter() {
         }
         return acc;
     }, new Map());
-    
     const currentSelection = dom.filterCreatorSelect.value;
     dom.filterCreatorSelect.innerHTML = '<option value="all">Filter: All Creators</option>';
     creators.forEach((username, uid) => {
@@ -141,7 +112,6 @@ function renderCreatorFilter() {
 }
 
 /**
- * Affiche les colonnes et les cartes du Kanban.
  * @param {Array} tasksToRender - Tâches filtrées et triées.
  */
 function renderKanbanBoard(tasksToRender) {
@@ -180,7 +150,6 @@ function renderKanbanBoard(tasksToRender) {
 }
 
 /**
- * Crée le HTML pour une seule carte Kanban.
  * @param {object} task - L'objet tâche.
  * @returns {string} Le HTML de la carte.
  */
@@ -221,7 +190,6 @@ function createKanbanCardHTML(task) {
     `;
 }
 
-// --- LOGIQUE DU MODAL DE TÂCHE ---
 
 function populateModalDropdowns() {
     dom.statusSelect.innerHTML = STATUSES.map(status => `<option value="${status}">${status}</option>`).join('');
@@ -312,7 +280,7 @@ async function handleSubmitTask(e) {
                 createdById: state.currentUser.uid,
                 createdByUsername: state.currentUser.displayName || `User-${state.currentUser.uid.substring(0, 6)}`,
                 createdAt: Timestamp.now(),
-                completedAt: null, // Initialise à null
+                completedAt: null, 
             });
             showToast({ title: "Succès", description: "Tâche créée." });
         }
@@ -335,7 +303,7 @@ async function handleDeleteTask() {
         await deleteDoc(doc(db, tasksCollectionPath, state.taskToDeleteId));
         showToast({ title: "Succès", description: "Tâche supprimée." });
         closeDeleteModal();
-        closeTaskModal(); // Ferme aussi le modal d'édition
+        closeTaskModal(); 
     } catch (error) {
         console.error("Error deleting task:", error);
         showToast({ variant: "destructive", title: "Erreur", description: "Impossible de supprimer la tâche." });
@@ -348,7 +316,6 @@ async function handleStatusUpdate(taskId, newStatus) {
     
     const tasksCollectionPath = `/artifacts/mini-jira-kanban-board/public/data/projects/${state.currentProjectId}/tasks`;
     
-    // NOUVELLE LOGIQUE: Ajouter 'completedAt' si la tâche passe à "Done"
     let updateData = { status: newStatus };
     if (newStatus === 'Done' && task.status !== 'Done') {
         updateData.completedAt = Timestamp.now();
@@ -356,7 +323,7 @@ async function handleStatusUpdate(taskId, newStatus) {
 
     try {
         const taskDoc = doc(db, tasksCollectionPath, taskId);
-        await updateDoc(taskDoc, updateData); // Utilise les données de mise à jour
+        await updateDoc(taskDoc, updateData); 
     } catch (error) {
         console.error("Error updating task status:", error);
         showToast({ variant: "destructive", title: "Erreur", description: "Impossible de mettre à jour le statut." });
@@ -364,7 +331,6 @@ async function handleStatusUpdate(taskId, newStatus) {
 }
 
 
-// --- LOGIQUE DRAG & DROP ---
 
 function addDragDropListeners() {
     document.querySelectorAll('.kanban-card').forEach(card => {
@@ -381,7 +347,6 @@ function handleDragStart(e) {
     const taskId = e.currentTarget.dataset.taskId;
     updateDraggedTaskId(taskId);
     e.dataTransfer.setData('text/plain', taskId);
-    // setTimeout(() => e.currentTarget.classList.add('opacity-50'), 0);
     e.currentTarget.classList.add('opacity-50');
 }
 
@@ -409,7 +374,6 @@ function handleDrop(e) {
     updateDraggedTaskId(null);
 }
 
-// --- ÉCOUTEURS DE CLIC SUR LES CARTES ---
 
 function addCardClickListeners() {
     document.querySelectorAll('.kanban-card').forEach(card => {
