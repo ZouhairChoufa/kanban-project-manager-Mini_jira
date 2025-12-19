@@ -65,3 +65,9 @@ temp/
 TODO.md
 
 serviceAccountKey.json
+
+# Documentation files (except README.md)
+*.md
+!README.md
+!ROADMAP.md
+
