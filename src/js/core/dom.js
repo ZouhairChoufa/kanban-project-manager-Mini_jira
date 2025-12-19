@@ -28,7 +28,6 @@ export const createProjectBtn = document.getElementById('create-project-btn');
 export const projectsList = document.getElementById('projects-list');
 
 export const backToProjectsBtn = document.getElementById('back-to-projects-btn');
-export const kanbanProjectTitle = document.getElementById('kanban-project-title');
 export const kanbanBoard = document.getElementById('kanban-board');
 export const addTaskBtn = document.getElementById('add-task-btn');
 export const fabAddTask = document.getElementById('fab-add-task');
@@ -92,3 +91,6 @@ export const dashboardProjectTitle = document.getElementById('dashboard-project-
 export const dashboardStatsKpi = document.getElementById('dashboard-stats-kpi');
 export const dashboardStatsWorkload = document.getElementById('dashboard-stats-workload');
 export const dashboardTaskDetails = document.getElementById('dashboard-task-details');
+
+// New elements for Jira-style layout
+export const pageTitle = document.getElementById('page-title');

@@ -14,6 +14,10 @@ export const state = {
     hasTasksLoaded: false,
     hasUsersLoaded: false,
     hasProjectsLoaded: false,
+    
+    // Navigation state
+    navigationMode: 'global', // 'global' or 'project'
+    currentView: 'home' // 'home', 'projects', 'profile', 'summary', 'board', 'calendar', 'reports'
 };
 
 export function updateCurrentUser(user) {
@@ -51,4 +55,10 @@ export function updateHasUsersLoaded(loaded) {
 }
 export function updateHasProjectsLoaded(loaded) {
     state.hasProjectsLoaded = loaded;
+}
+export function updateNavigationMode(mode) {
+    state.navigationMode = mode;
+}
+export function updateCurrentView(view) {
+    state.currentView = view;
 }

@@ -4,10 +4,15 @@ tailwind.config = {
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
             },
+            letterSpacing: {
+                tight: '-0.025em',
+                tighter: '-0.05em',
+            },
             colors: {
-                'app-background': '#F0F8FF',
-                'app-primary': '#A0D2EB',
-                'app-accent': '#FFB347',
+                'app-background': 'rgb(249 250 251)', // gray-50
+                'app-primary': 'rgb(71 85 105)',      // slate-600
+                'app-accent': 'rgb(79 70 229)',       // indigo-600
+                'sidebar': 'rgb(30 41 59)',           // slate-800
             },
             keyframes: {
                 spin: {

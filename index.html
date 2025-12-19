@@ -6,187 +6,325 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TaskFlow Kanban</title>
     
-    <!-- Google Font: Inter -->
+    <!-- Google Font: Inter with Variable Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Tailwind JS (pour la configuration) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Configuration Tailwind personnalisée -->
     <script src="./src/js/config.js"></script>
     
     <!-- Styles CSS personnalisés -->
-    <link rel="stylesheet" href="./src/css/styles.css">
+    <link rel="stylesheet" href="./src/css/style.css">
 </head>
 
-<body class="bg-app-background font-sans text-gray-900">
+<body class="bg-gray-50 font-sans text-slate-900">
 
     <!-- ===== Superposition de Chargement ===== -->
     <div id="loading-overlay" class="fixed inset-0 z-50 flex h-screen w-full items-center justify-center bg-white/70 backdrop-blur-sm">
-        <svg class="h-12 w-12 animate-spin text-app-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
+        <i data-lucide="loader-2" class="h-12 w-12 animate-spin text-app-accent"></i>
     </div>
 
     <!-- ===== Conteneur d'Authentification ===== -->
-    <div id="auth-container" class="hidden min-h-screen flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-white rounded-lg shadow-xl p-8">
+    <div id="auth-container" class="hidden min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-white rounded-2xl border border-slate-200 shadow-xl p-8">
             
             <!-- Formulaire de Connexion -->
             <div id="login-form-container">
-                <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Welcome Back!</h2>
-                <form id="login-form" class="space-y-4">
+                <div class="text-center mb-8">
+                    <i data-lucide="layout" class="w-12 h-12 text-indigo-600 mb-4 mx-auto"></i>
+                    <h2 class="text-2xl font-bold tracking-tight text-slate-900">Bon retour</h2>
+                    <p class="text-slate-500 text-sm mt-2">Connectez-vous à votre compte pour continuer</p>
+                </div>
+                <form id="login-form" class="space-y-5">
                     <div>
-                        <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
-                        <input type="email" id="login-email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm" placeholder="you@example.com">
+                        <label for="login-email" class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+                        <input type="email" id="login-email" name="email" required class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-all placeholder:text-slate-400" placeholder="you@example.com">
                     </div>
                     <div>
-                        <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
-                        <input type="password" id="login-password" name="password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm" placeholder="••••••••">
+                        <label for="login-password" class="block text-sm font-medium text-slate-700 mb-1.5">Mot de passe</label>
+                        <input type="password" id="login-password" name="password" required class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-all placeholder:text-slate-400" placeholder="••••••••">
                     </div>
                     <p id="login-error" class="text-xs text-red-600 hidden"></p>
-                    <button id="login-submit-btn" type="submit" class="w-full flex justify-center items-center rounded-md border border-transparent bg-app-accent px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90 transition-opacity">
-                        Log In
+                    <button id="login-submit-btn" type="submit" class="w-full py-2.5 rounded-lg text-white font-semibold bg-indigo-600 hover:bg-indigo-700 shadow-sm hover:shadow transition-all">
+                        Se connecter
                     </button>
                 </form>
-                <p class="text-sm text-center text-gray-600 mt-6">
-                    Don't have an account? 
-                    <button id="toggle-to-signup" type="button" class="font-medium text-app-accent hover:underline">Sign Up</button>
+                <p class="text-sm text-center text-slate-500 mt-6">
+                    Vous n'avez pas de compte ? 
+                    <button id="toggle-to-signup" type="button" class="text-indigo-600 hover:text-indigo-700 font-semibold hover:underline">S'inscrire</button>
                 </p>
             </div>
 
             <!-- Formulaire d'Inscription -->
             <div id="signup-form-container" class="hidden">
-                <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Create Account</h2>
-                <form id="signup-form" class="space-y-4">
+                <div class="text-center mb-8">
+                    <i data-lucide="layout" class="w-12 h-12 text-indigo-600 mb-4 mx-auto"></i>
+                    <h2 class="text-2xl font-bold tracking-tight text-slate-900">Créer un compte</h2>
+                    <p class="text-slate-500 text-sm mt-2">Commencez avec votre compte gratuit</p>
+                </div>
+                <form id="signup-form" class="space-y-5">
                     <div>
-                        <label for="signup-username" class="block text-sm font-medium text-gray-700">Username</label>
-                        <input type="text" id="signup-username" name="username" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm" placeholder="Your Name">
+                        <label for="signup-username" class="block text-sm font-medium text-slate-700 mb-1.5">Nom d'utilisateur</label>
+                        <input type="text" id="signup-username" name="username" required class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-all placeholder:text-slate-400" placeholder="Votre nom">
                     </div>
                     <div>
-                        <label for="signup-email" class="block text-sm font-medium text-gray-700">Email</label>
-                        <input type="email" id="signup-email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm" placeholder="you@example.com">
+                        <label for="signup-email" class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+                        <input type="email" id="signup-email" name="email" required class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-all placeholder:text-slate-400" placeholder="you@example.com">
                     </div>
                     <div>
-                        <label for="signup-password" class="block text-sm font-medium text-gray-700">Password</label>
-                        <input type="password" id="signup-password" name="password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm" placeholder="Min. 6 characters">
+                        <label for="signup-password" class="block text-sm font-medium text-slate-700 mb-1.5">Mot de passe</label>
+                        <input type="password" id="signup-password" name="password" required class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-all placeholder:text-slate-400" placeholder="Min. 6 caractères">
                     </div>
                     <p id="signup-error" class="text-xs text-red-600 hidden"></p>
-                    <button id="signup-submit-btn" type="submit" class="w-full flex justify-center items-center rounded-md border border-transparent bg-app-accent px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90 transition-opacity">
-                        Create Account
+                    <button id="signup-submit-btn" type="submit" class="w-full py-2.5 rounded-lg text-white font-semibold bg-indigo-600 hover:bg-indigo-700 shadow-sm hover:shadow transition-all">
+                        Créer un compte
                     </button>
                 </form>
-                <p class="text-sm text-center text-gray-600 mt-6">
-                    Already have an account? 
-                    <button id="toggle-to-login" type="button" class="font-medium text-app-accent hover:underline">Log In</button>
+                <p class="text-sm text-center text-slate-500 mt-6">
+                    Vous avez déjà un compte ? 
+                    <button id="toggle-to-login" type="button" class="text-indigo-600 hover:text-indigo-700 font-semibold hover:underline">Se connecter</button>
                 </p>
             </div>
         </div>
     </div>
 
     <!-- ===== Conteneur Principal de l'Application ===== -->
-    <div id="app-container" class="flex h-screen w-full flex-col hidden">
-        <!-- En-tête -->
-        <header class="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6">
-            <h1 class="text-xl font-semibold text-gray-800">
-                <span id="header-title-link" class="cursor-pointer hover:text-app-primary transition-colors">TaskFlow Kanban</span>
-            </h1>
+    <div id="app-container" class="flex flex-col h-screen hidden">
+        <!-- Global Top Bar -->
+        <header class="fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-50 flex items-center justify-between px-6">
+            <div class="flex items-center gap-3">
+                <i data-lucide="layout" class="w-6 h-6 text-indigo-600"></i>
+                <h1 id="header-title-link" class="text-xl font-bold text-slate-900 cursor-pointer hover:text-indigo-600 transition-colors">TaskFlow</h1>
+            </div>
             <div class="flex items-center gap-4">
-                <div id="user-info" class="flex items-center gap-2 cursor-pointer rounded-full p-1 hover:bg-gray-100 transition-colors">
-                    <div id="header-avatar" class="flex items-center gap-2">
-                        <!-- L'avatar est inséré par JS -->
-                    </div>
-                    <span id="user-display-name" class="text-sm font-medium text-gray-700">Loading...</span>
+                <div id="global-header-auth-guest" class="flex items-center gap-3">
+                    <button id="global-header-login-btn" class="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">
+                        <i data-lucide="log-in" class="h-4 w-4"></i>
+                        <span>Connexion</span>
+                    </button>
+                    <button id="global-header-signup-btn" class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors">
+                        <i data-lucide="user-plus" class="h-4 w-4 mr-2"></i>
+                        <span>S'inscrire</span>
+                    </button>
                 </div>
-                <button id="logout-btn" title="Log Out" class="text-gray-500 hover:text-app-accent transition-colors">
-                    <svg class="icon-logout" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-                    <span class="sr-only">Log Out</span>
-                </button>
+                <div id="global-header-auth-user" class="hidden flex items-center gap-3">
+                    <div id="global-header-avatar" class="flex items-center gap-2"></div>
+                    <button id="global-header-logout-btn" class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                        <i data-lucide="log-out" class="h-4 w-4"></i>
+                        <span>Déconnexion</span>
+                    </button>
+                </div>
             </div>
         </header>
 
-        <!-- ===== Vue Projets (Accueil) ===== -->
-        <main id="projects-view" class="flex-1 overflow-x-auto p-4 md:p-8">
-            <!-- Description du site -->
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
-                <h2 class="text-2xl font-bold tracking-tight mb-2">Bienvenue sur TaskFlow Kanban</h2>
-                <p class="text-gray-600">
-                    Gérez vos projets et vos tâches avec simplicité. Créez un nouveau projet pour commencer, ou accédez à un projet existant à l'aide de son code d'accès unique.
-                </p>
-            </div>
-            <!-- En-tête des Projets -->
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-bold tracking-tight">Vos Projets</h3>
-                <button id="create-project-btn" class="flex items-center justify-center rounded-md bg-app-accent px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90 transition-opacity">
-                    <svg class="icon-plus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                    Créer un Projet
-                </button>
-            </div>
-            <!-- Grille des Projets -->
-            <div id="projects-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Les cartes de projet sont insérées par JS -->
-            </div>
-        </main>
-
-        <!-- ===== Vue Kanban (Projet Spécifique) ===== -->
-        <main id="kanban-view" class="flex-1 overflow-x-auto p-4 md:p-6 hidden">
-            <!-- Barre supérieure : Titre + Filtres + Boutons -->
-            <div class="flex flex-col md:flex-row items-start justify-between mb-4 gap-4">
-                <div class="flex-1 flex items-center gap-4">
-                    <button id="back-to-projects-btn" class="flex items-center text-sm font-medium text-gray-600 hover:text-app-accent transition-colors">
-                        <svg class="icon-back" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                        Retour
-                    </button>
-                    <h2 id="kanban-project-title" class="text-2xl font-bold tracking-tight truncate">Kanban Board</h2>
+        <div class="flex flex-1 pt-16">
+        <aside class="w-64 h-full border-r border-gray-200 bg-white flex flex-col">
+            <nav class="flex-1 p-3">
+                <ul class="space-y-1">
+                    <li>
+                        <a id="nav-home" href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded bg-blue-50 text-blue-700 font-medium transition-colors" data-view="home">
+                            <i data-lucide="home" class="w-4 h-4"></i>
+                            <span class="text-sm">Accueil</span>
+                        </a>
+                    </li>
+                    <li>
+                        <div class="relative">
+                            <a id="nav-projects" href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded text-gray-600 hover:bg-gray-100 transition-colors" data-view="projects">
+                                <i data-lucide="folder" class="w-4 h-4"></i>
+                                <span class="text-sm">Projets</span>
+                            </a>
+                            <div id="project-submenu" class="hidden flex-col mt-1 space-y-1 border-l-2 border-slate-200 ml-4 pl-3 transition-all duration-300">
+                                <a id="nav-summary" href="#" class="group flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors" data-view="summary">
+                                    <i data-lucide="layout-dashboard" class="h-4 w-4"></i>
+                                    <span>Vue d'ensemble</span>
+                                </a>
+                                <a id="nav-board" href="#" class="group flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors" data-view="board">
+                                    <i data-lucide="kanban-square" class="h-4 w-4"></i>
+                                    <span>Tableau</span>
+                                </a>
+                                <a id="nav-calendar" href="#" class="group flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors" data-view="calendar">
+                                    <i data-lucide="calendar" class="h-4 w-4"></i>
+                                    <span>Calendrier</span>
+                                </a>
+                                <a id="nav-reports" href="#" class="group flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors" data-view="reports">
+                                    <i data-lucide="bar-chart-3" class="h-4 w-4"></i>
+                                    <span>Rapports</span>
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <a id="nav-profile" href="#" class="nav-item flex items-center gap-3 px-3 py-2 rounded text-gray-600 hover:bg-gray-100 transition-colors" data-view="profile">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                            <span class="text-sm">Profil</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="p-3 border-t border-gray-200">
+                <div id="user-info" class="flex items-center gap-3 rounded p-2 pointer-events-none">
+                    <div id="header-avatar" class="flex items-center gap-2">
+                        <!-- L'avatar est inséré par JS -->
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <span id="user-display-name" class="text-sm font-medium text-slate-700 block truncate">Invité</span>
+                    </div>
                 </div>
-                <div class="flex-1 flex flex-col md:flex-row gap-2 w-full md:w-auto md:justify-end">
-                    <input type="text" id="filter-name" placeholder="Filter by task name..." class="block w-full md:w-48 rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm">
-                    <select id="sort-date" class="block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm">
-                        <option value="desc">Sort: Plus récent</option>
-                        <option value="asc">Sort: Plus ancien</option>
-                    </select>
-                    <select id="filter-creator" class="block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm">
-                        <option value="all">Filter: All Creators</option>
-                    </select>
-                    <!-- NOUVEAU: Bouton Dashboard -->
-                    <button id="show-dashboard-btn" class="hidden md:flex items-center justify-center rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-opacity">
-                        <svg class="icon-dashboard" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 12v5h4v-5"/><path d_:"M13 8v9h4V8"/><path d="M19 3v14h4V3"/></svg>
-                        Dashboard
-                    </button>
-                    <button id="add-task-btn" class="hidden md:flex items-center justify-center rounded-md bg-app-accent px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90 transition-opacity">
-                        <svg class="icon-plus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                        Add Task
-                    </button>
-                </div>
             </div>
-            <!-- Grille du Kanban -->
-            <div id="kanban-board" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                <!-- Les colonnes sont insérées par JS -->
-            </div>
-            <!-- Bouton flottant (Mobile) -->
-            <button id="fab-add-task" class="md:hidden fixed bottom-6 right-6 rounded-full h-14 w-14 bg-app-accent text-white shadow-lg flex items-center justify-center">
-                <svg class="icon-plus-fab" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                <span class="sr-only">Add Task</span>
-            </button>
-        </main>
+        </aside>
         
-        <!-- ===== NOUVEAU: Vue Dashboard ===== -->
-        <main id="dashboard-view" class="flex-1 overflow-x-auto p-4 md:p-6 hidden">
-            <!-- En-tête du Dashboard -->
-            <div class="flex items-center gap-4 mb-6">
-                <button id="dashboard-back-btn" class="flex items-center text-sm font-medium text-gray-600 hover:text-app-accent transition-colors">
-                    <svg class="icon-back" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                    Retour au Kanban
-                </button>
-                <h2 id="dashboard-project-title" class="text-2xl font-bold tracking-tight truncate">Dashboard</h2>
-            </div>
+        <div class="flex-1 bg-slate-50 overflow-hidden">
+
+            <!-- ===== Vue Home ===== -->
+            <main id="home-view" class="flex-1 overflow-auto"></main>
+
+            <!-- ===== Vue Profile ===== -->
+            <main id="profile-view" class="flex-1 overflow-auto hidden"></main>
+
+            <!-- ===== Vue Projets ===== -->
+            <main id="projects-view" class="flex-1 overflow-auto hidden">
+                <div class="bg-white border-b border-slate-200 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <h1 class="text-2xl font-bold text-slate-900">Projets</h1>
+                        <div id="projects-action-bar"></div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="projects-list" class="grid grid-cols-3 gap-6"></div>
+                </div>
+            </main>
+
+            <!-- ===== Vue Kanban (Projet Spécifique) ===== -->
+            <main id="kanban-view" class="flex-1 overflow-auto hidden">
+                <div class="bg-white border-b border-gray-200 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                            <button id="back-to-projects-btn" class="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                                Projets
+                            </button>
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            <span id="page-title" class="font-medium text-gray-900">My Project</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input type="text" id="filter-name" placeholder="Rechercher" class="w-48 px-3 py-1.5 text-sm border border-gray-300 rounded">
+                            <select id="sort-date" class="px-3 py-1.5 text-sm border border-gray-300 rounded">
+                                <option value="desc">Récemment mis à jour</option>
+                                <option value="asc">Plus ancien en premier</option>
+                            </select>
+                            <select id="filter-creator" class="px-3 py-1.5 text-sm border border-gray-300 rounded">
+                                <option value="all">Toutes les personnes</option>
+                            </select>
+                            <button id="add-task-btn" class="hidden inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors">
+                                <i data-lucide="plus" class="h-4 w-4"></i>
+                                Créer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+
+                    <!-- Grille du Kanban -->
+                    <div id="kanban-board" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                        <!-- Les colonnes sont insérées par JS -->
+                    </div>
+                    <!-- Bouton flottant (Mobile) -->
+                    <button id="fab-add-task" class="md:hidden fixed bottom-6 right-6 rounded-full h-14 w-14 bg-blue-600 text-white shadow-lg flex items-center justify-center hover:bg-blue-700 transition-colors">
+                        <i data-lucide="plus" class="w-6 h-6"></i>
+                        <span class="sr-only">Ajouter une tâche</span>
+                    </button>
+                </div>
+            </main>
+
+            <!-- ===== Vue Summary ===== -->
+            <main id="summary-view" class="flex-1 overflow-auto hidden">
+                <div class="bg-white border-b border-gray-200 px-6 py-4">
+                    <h1 id="summary-project-title" class="text-2xl font-semibold text-gray-900">Résumé du projet</h1>
+                    <p id="summary-project-description" class="text-gray-500 text-sm mt-1"></p>
+                </div>
+                <div class="p-6">
+                    <div id="summary-stats" class="grid grid-cols-3 gap-6 mb-8"></div>
+                    <div id="summary-team" class="mb-8"></div>
+                    <div id="summary-activity"></div>
+                </div>
+            </main>
+
+            <!-- ===== Vue Calendar ===== -->
+            <main id="calendar-view" class="flex-1 overflow-auto hidden">
+                <div class="bg-white border-b border-gray-200 px-6 py-4">
+                    <h1 class="text-2xl font-semibold text-gray-900">Calendrier</h1>
+                    <p id="calendar-month" class="text-gray-500 text-sm mt-1"></p>
+                </div>
+                <div class="p-6">
+                    <div id="calendar-grid"></div>
+                </div>
+            </main>
+
+            <!-- ===== Vue Reports ===== -->
+            <main id="reports-view" class="flex-1 overflow-auto hidden">
+                <div class="bg-white border-b border-gray-200 px-6 py-4">
+                    <h1 class="text-2xl font-semibold text-gray-900">Rapports</h1>
+                </div>
+                <div class="p-6">
+                    <div id="reports-stats-kpi" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-lg shadow-sm border">
+                            <h3 class="text-lg font-semibold text-slate-900 mb-4">Répartition des tâches</h3>
+                            <div class="relative h-64">
+                                <canvas id="reportsStatusChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border">
+                            <h3 class="text-lg font-semibold text-slate-900 mb-4">Charge de travail par utilisateur</h3>
+                            <div class="relative h-64">
+                                <canvas id="reportsWorkloadChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="reports-workload"></div>
+                </div>
+            </main>
+            
+            <!-- ===== NOUVEAU: Vue Dashboard ===== -->
+            <main id="dashboard-view" class="flex-1 overflow-auto p-6 hidden">
+                <!-- En-tête du Dashboard -->
+                <div class="flex items-center gap-4 mb-6">
+                    <button id="dashboard-back-btn" class="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        Retour au tableau
+                    </button>
+                    <h2 id="dashboard-project-title" class="text-xl font-semibold text-slate-900 truncate">Analytique</h2>
+                </div>
             
             <!-- Statistiques Clés (KPIs) -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" id="dashboard-stats-kpi">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" id="dashboard-stats-kpi">
                 <!-- Les KPIs sont insérés par JS -->
+            </div>
+            
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow-sm border">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-4">Task Status Distribution</h3>
+                    <div class="relative h-64">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm border">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-4">Workload by User</h3>
+                    <div class="relative h-64">
+                        <canvas id="workloadChart"></canvas>
+                    </div>
+                </div>
             </div>
             
             <!-- Charge de Travail -->
@@ -196,8 +334,9 @@
                     <!-- La charge de travail est insérée par JS -->
                 </div>
             </div>
-        </main>
-
+            </main>
+        </div>
+        </div>
     </div>
 
     <!-- ===== Modals ===== -->
@@ -206,42 +345,61 @@
     <dialog id="task-modal" class="p-0 w-full max-w-lg rounded-lg shadow-xl backdrop:bg-black/50">
         <div class="p-6">
             <div class="flex items-center justify-between mb-4">
-                <h3 id="modal-title" class="text-lg font-semibold">Create Task</h3>
+                <h3 id="modal-title" class="text-lg font-semibold">Créer une tâche</h3>
                 <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600">
-                    <svg class="icon-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    <i data-lucide="x" class="icon-sm"></i>
                 </button>
             </div>
-            <p id="modal-description" class="text-sm text-gray-500 mb-6">Fill out the form to create a new task.</p>
+            <p id="modal-description" class="text-sm text-gray-500 mb-6">Remplissez le formulaire pour créer une nouvelle tâche.</p>
             <form id="task-form" class="space-y-4">
                 <input type="hidden" id="task-id">
                 <div>
-                    <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-                    <input type="text" id="title" name="title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm" placeholder="e.g., Implement feature X">
-                    <p id="title-error" class="text-xs text-red-600 mt-1 hidden">Title must be at least 3 characters.</p>
+                    <label for="title" class="block text-sm font-medium text-gray-700">Titre</label>
+                    <input type="text" id="title" name="title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm" placeholder="Ex: Implémenter la fonctionnalité X">
+                    <p id="title-error" class="text-xs text-red-600 mt-1 hidden">Le titre doit comporter au moins 3 caractères.</p>
                 </div>
                 <div>
                     <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea id="description" name="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm resize-none" placeholder="Add a short description..."></textarea>
+                    <textarea id="description" name="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm resize-none" placeholder="Ajoutez une brève description..."></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                        <label for="due-date" class="block text-sm font-medium text-gray-700">Date d'échéance</label>
+                        <input type="date" id="due-date" name="dueDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="tags" class="block text-sm font-medium text-gray-700">Étiquettes</label>
+                        <input type="text" id="tags" name="tags" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm" placeholder="Tapez et appuyez sur Entrée">
+                        <div id="tags-container" class="flex flex-wrap gap-1 mt-2"></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700">Statut</label>
                         <select id="status" name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm"></select>
                     </div>
                     <div>
-                        <label for="assignee" class="block text-sm font-medium text-gray-700">Assignee</label>
+                        <label for="priority" class="block text-sm font-medium text-gray-700">Priorité</label>
+                        <select id="priority" name="priority" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm">
+                            <option value="Low">Basse</option>
+                            <option value="Medium" selected>Moyenne</option>
+                            <option value="High">Haute</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="assignee" class="block text-sm font-medium text-gray-700">Assigné à</label>
                         <select id="assignee" name="assignee" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm"></select>
                     </div>
                 </div>
                 <div class="pt-6 flex justify-between items-center">
                     <button id="delete-task-btn" type="button" class="flex items-center justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 transition-colors disabled:opacity-50">
-                        <svg class="icon-trash" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                        Delete
+                        <i data-lucide="trash-2" class="icon-sm icon-with-text"></i>
+                        Supprimer
                     </button>
                     <div class="flex gap-3">
-                        <button id="cancel-modal-btn" type="button" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">Cancel</button>
+                        <button id="cancel-modal-btn" type="button" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">Annuler</button>
                         <button id="save-task-btn" type="submit" class="flex items-center justify-center rounded-md border border-transparent bg-app-accent px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90 transition-opacity disabled:opacity-50">
-                            <span id="save-btn-text">Create Task</span>
+                            <span id="save-btn-text">Créer une tâche</span>
                         </button>
                     </div>
                 </div>
@@ -251,11 +409,11 @@
 
     <!-- Modal de Suppression -->
     <dialog id="delete-modal" class="p-6 w-full max-w-sm rounded-lg shadow-xl">
-        <h3 class="text-lg font-semibold text-gray-900">Are you sure?</h3>
-        <p class="text-sm text-gray-500 mt-2 mb-6">This action cannot be undone. This will permanently delete the task.</p>
+        <h3 class="text-lg font-semibold text-gray-900">Êtes-vous sûr ?</h3>
+        <p class="text-sm text-gray-500 mt-2 mb-6">Cette action est irréversible. Cela supprimera définitivement la tâche.</p>
         <div class="flex justify-end gap-3">
-            <button id="cancel-delete-btn" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">Cancel</button>
-            <button id="confirm-delete-btn" class="rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700">Continue</button>
+            <button id="cancel-delete-btn" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">Annuler</button>
+            <button id="confirm-delete-btn" class="rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700">Continuer</button>
         </div>
     </dialog>
     
@@ -263,9 +421,9 @@
     <dialog id="profile-modal" class="p-0 w-full max-w-lg rounded-lg shadow-xl backdrop:bg-black/50">
         <div class="p-6">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold">Your Profile</h3>
+                <h3 class="text-lg font-semibold">Votre profil</h3>
                 <button id="close-profile-modal-btn" class="text-gray-400 hover:text-gray-600">
-                    <svg class="icon-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    <i data-lucide="x" class="icon-sm"></i>
                 </button>
             </div>
             <div class="space-y-6">
@@ -275,12 +433,12 @@
                     </div>
                     <input type="file" id="profile-image-upload" class="hidden" accept="image/png, image/jpeg">
                     <button id="profile-upload-btn" type="button" class="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
-                        <svg class="icon-camera" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                        Change Photo
+                        <i data-lucide="camera" class="icon-md"></i>
+                        Changer la photo
                     </button>
                 </div>
                 <div>
-                    <h4 class="text-sm font-medium text-gray-500 mb-2">Task Statistics (Current Project)</h4>
+                    <h4 class="text-sm font-medium text-gray-500 mb-2">Statistiques des tâches (Projet actuel)</h4>
                     <div class="grid grid-cols-3 gap-3 text-center">
                         <div class="bg-blue-100 p-3 rounded-md">
                             <span id="stats-todo" class="text-2xl font-bold text-blue-800">0</span>
@@ -298,20 +456,20 @@
                 </div>
                 <form id="profile-username-form" class="space-y-2">
                     <div>
-                        <label for="profile-username" class="block text-sm font-medium text-gray-700">Username</label>
+                        <label for="profile-username" class="block text-sm font-medium text-gray-700">Nom d'utilisateur</label>
                         <input type="text" id="profile-username" name="username" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm">
                     </div>
                     <button id="profile-save-username-btn" type="submit" class="w-full flex justify-center items-center rounded-md border border-transparent bg-app-accent px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90 transition-opacity">
-                        Save Username
+                        Enregistrer le nom
                     </button>
                 </form>
                 <div class="space-y-2 pt-4 border-t">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <label class="block text-sm font-medium text-gray-700">Courriel</label>
                         <p id="profile-email" class="text-sm text-gray-600 mt-1"></p>
                     </div>
                     <button id="profile-reset-password-btn" type="button" class="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
-                        Send Password Reset Email
+                        Envoyer un courriel de réinitialisation
                     </button>
                 </div>
             </div>
@@ -324,7 +482,7 @@
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold">Créer un nouveau projet</h3>
                 <button id="close-create-project-modal-btn" class="text-gray-400 hover:text-gray-600">
-                    <svg class="icon-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    <i data-lucide="x" class="icon-sm"></i>
                 </button>
             </div>
             <p class="text-sm text-gray-500 mb-6">Remplissez les détails pour créer votre projet.</p>
@@ -343,6 +501,10 @@
                     <input type="text" id="project-access-code" name="accessCode" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm" placeholder="Un code secret pour rejoindre (ex: 1234)">
                     <p id="project-code-error" class="text-xs text-red-600 mt-1 hidden">Le code doit comporter au moins 4 caractères.</p>
                 </div>
+                <div>
+                    <label for="project-deadline" class="block text-sm font-medium text-gray-700">Date limite</label>
+                    <input type="date" id="project-deadline" name="deadline" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-app-primary focus:ring-app-primary sm:text-sm">
+                </div>
                 <div class="pt-6 flex justify-end gap-3">
                     <button id="cancel-create-project-btn" type="button" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">Annuler</button>
                     <button id="save-project-btn" type="submit" class="flex items-center justify-center rounded-md border border-transparent bg-app-accent px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90 transition-opacity">
@@ -359,7 +521,7 @@
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold">Accéder au Projet</h3>
                 <button id="close-access-project-modal-btn" class="text-gray-400 hover:text-gray-600">
-                    <svg class="icon-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    <i data-lucide="x" class="icon-sm"></i>
                 </button>
             </div>
             <p class="text-sm text-gray-500 mb-6">Entrez le code d'accès pour voir les tâches de ce projet.</p>
@@ -376,6 +538,16 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </dialog>
+
+    <!-- Modal de Suppression de Projet -->
+    <dialog id="delete-project-modal" class="p-6 w-full max-w-sm rounded-lg shadow-xl backdrop:bg-black/50">
+        <h3 class="text-lg font-semibold text-gray-900">Supprimer le projet ?</h3>
+        <p class="text-sm text-gray-500 mt-2 mb-6">Cette action est irréversible. Toutes les tâches du projet seront également supprimées.</p>
+        <div class="flex justify-end gap-3">
+            <button id="cancel-delete-project-btn" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">Annuler</button>
+            <button id="confirm-delete-project-btn" class="rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700">Supprimer</button>
         </div>
     </dialog>
 

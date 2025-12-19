@@ -44,6 +44,9 @@ export function setupFirestoreListener() {
                 createdByUsername: data.createdByUsername || 'Unknown',
                 createdAt: data.createdAt || data.dateCreation || Timestamp.now(),
                 completedAt: data.completedAt || null,
+                priority: data.priority || 'Medium',
+                dueDate: data.dueDate || '',
+                tags: data.tags || []
             };
             if (normalizedTask.status === 'TODO') normalizedTask.status = 'To Do';
             if (normalizedTask.status === 'IN_PROGRESS') normalizedTask.status = 'In Progress';
@@ -67,7 +70,7 @@ export function setupFirestoreListener() {
 export function renderApp() {
     if (!state.currentProjectId || !state.hasTasksLoaded || !state.hasUsersLoaded) {
         dom.kanbanBoard.innerHTML = ''; 
-        dom.filterCreatorSelect.innerHTML = '<option value="all">Filter: All Creators</option>';
+        dom.filterCreatorSelect.innerHTML = '<option value="all">Filtre : Tous les créateurs</option>';
         return;
     }
     
@@ -104,7 +107,7 @@ function renderCreatorFilter() {
         return acc;
     }, new Map());
     const currentSelection = dom.filterCreatorSelect.value;
-    dom.filterCreatorSelect.innerHTML = '<option value="all">Filter: All Creators</option>';
+    dom.filterCreatorSelect.innerHTML = '<option value="all">Filtre : Tous les créateurs</option>';
     creators.forEach((username, uid) => {
         const selected = uid === currentSelection ? 'selected' : '';
         dom.filterCreatorSelect.innerHTML += `<option value="${uid}" ${selected}>${username}</option>`;
@@ -116,28 +119,35 @@ function renderCreatorFilter() {
  */
 function renderKanbanBoard(tasksToRender) {
     dom.kanbanBoard.innerHTML = ''; 
-    const columnColors = {
-        'To Do': { bg: 'bg-blue-100', border: 'border-blue-200', text: 'text-blue-800', badge: 'bg-blue-200' },
-        'In Progress': { bg: 'bg-orange-100', border: 'border-orange-200', text: 'text-orange-800', badge: 'bg-orange-200' },
-        'Done': { bg: 'bg-green-100', border: 'border-green-200', text: 'text-green-800', badge: 'bg-green-200' },
+    const statusConfig = {
+        'To Do': { pill: 'bg-blue-100 text-blue-700', icon: 'circle' },
+        'In Progress': { pill: 'bg-orange-100 text-orange-700', icon: 'clock' },
+        'Done': { pill: 'bg-green-100 text-green-700', icon: 'check-circle' }
     };
 
     for (const status of STATUSES) {
         const tasksInColumn = tasksToRender.filter(task => task.status === status);
-        const colors = columnColors[status];
+        const config = statusConfig[status];
         
         const column = document.createElement('div');
-        column.className = `rounded-lg h-full transition-colors duration-300 ${colors.bg} ${colors.border}`;
+        column.className = 'bg-slate-100/80 rounded-lg min-h-[600px]';
         column.innerHTML = `
-            <div class="flex items-center justify-between p-4 border-b ${colors.border}">
-                <h3 class="text-lg font-semibold ${colors.text}">${status}</h3>
-                <span class="px-2 py-0.5 rounded-full text-sm font-medium ${colors.badge} ${colors.text}">
-                    ${tasksInColumn.length}
-                </span>
+            <div class="p-3 border-b border-slate-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-1 text-xs font-medium rounded ${config.pill}">
+                            <i data-lucide="${config.icon}" class="w-3 h-3 inline mr-1"></i>
+                            ${status}
+                        </span>
+                    </div>
+                    <span class="text-xs text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full">
+                        ${tasksInColumn.length}
+                    </span>
+                </div>
             </div>
-            <div class="p-4 space-y-4 min-h-[200px] kanban-column-content" data-status="${status}">
+            <div class="p-2 space-y-2 kanban-column-content" data-status="${status}">
                 ${tasksInColumn.length === 0 
-                    ? `<div class="flex items-center justify-center h-full text-sm text-gray-500/70">Déposez les tâches ici</div>`
+                    ? `<div class="flex items-center justify-center h-32 text-xs text-slate-400 border-2 border-dashed border-slate-300 rounded bg-white/50">Déposez les tâches ici</div>`
                     : tasksInColumn.map(createKanbanCardHTML).join('')
                 }
             </div>
@@ -147,6 +157,11 @@ function renderKanbanBoard(tasksToRender) {
     
     addDragDropListeners();
     addCardClickListeners();
+    
+    // Render Lucide icons for the new cards
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+    }
 }
 
 /**
@@ -155,37 +170,71 @@ function renderKanbanBoard(tasksToRender) {
  */
 function createKanbanCardHTML(task) {
     const assignee = state.allUsers.find(user => user.uid === task.assigneeId && user.displayName);
-    let createdByText = '';
-    if (task.createdById === state.currentUser?.uid) {
-        createdByText = 'Créé par: Vous';
-    } else {
-        const creator = state.allUsers.find(u => u.uid === task.createdById);
-        const creatorName = creator?.displayName || task.createdByUsername || 'Unknown';
-        createdByText = `Créé par: ${creatorName}`;
+    const priority = task.priority || 'Medium';
+    const taskId = `PC-${task.id.substring(0, 2).toUpperCase()}`;
+    
+    const priorityConfig = {
+        'Low': { icon: 'arrow-down', color: 'text-green-600' },
+        'Medium': { icon: 'minus', color: 'text-yellow-600' },
+        'High': { icon: 'arrow-up', color: 'text-red-600' }
+    };
+    
+    const statusBorderConfig = {
+        'To Do': 'border-l-blue-500',
+        'In Progress': 'border-l-orange-500',
+        'Done': 'border-l-green-500'
+    };
+    
+    const priorityStyle = priorityConfig[priority];
+    const borderColor = statusBorderConfig[task.status] || 'border-l-slate-500';
+    
+    // Due date logic
+    let dueDateHTML = '';
+    if (task.dueDate) {
+        const dueDate = new Date(task.dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        dueDate.setHours(0, 0, 0, 0);
+        const isOverdue = dueDate <= today;
+        const dateColor = isOverdue ? 'text-red-600' : 'text-slate-500';
+        dueDateHTML = `
+            <div class="flex items-center gap-1 ${dateColor}">
+                <i data-lucide="calendar" class="w-3 h-3"></i>
+                <span class="text-xs">${task.dueDate}</span>
+            </div>
+        `;
     }
-    const dateString = formatRelativeTime(task.createdAt);
+    
+    // Tags HTML
+    const tagsHTML = task.tags && task.tags.length > 0 ? `
+        <div class="flex flex-wrap gap-1 mb-2">
+            ${task.tags.map(tag => `<span class="bg-blue-100 text-blue-800 text-xs rounded-full px-2 py-0.5">${tag}</span>`).join('')}
+        </div>
+    ` : '';
 
     return `
-        <div class="bg-white p-3 rounded-lg shadow-sm border cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow duration-200 flex items-start group kanban-card" 
+        <div class="bg-white border-t border-r border-b border-slate-200 ${borderColor} border-l-4 rounded-md shadow-sm hover:shadow-md cursor-grab active:cursor-grabbing transition-all duration-200 group kanban-card" 
              draggable="true" 
              data-task-id="${task.id}">
-            <div class="flex-1 space-y-2 overflow-hidden">
-                <p class="font-medium text-gray-800 truncate">${task.title}</p>
-                <p class="text-sm text-gray-600 line-clamp-2">${task.description || ''}</p>
-                ${assignee ? `
-                <div class="flex items-center gap-2 text-sm text-gray-500 pt-1">
-                    <div class="flex items-center gap-1" title="Assigné à: ${assignee.displayName}">
-                        ${createUserAvatar(assignee, 'h-5 w-5')}
-                        <span>${assignee.displayName}</span>
+            <div class="p-3">
+                ${tagsHTML}
+                <h4 class="text-sm text-slate-800 font-medium leading-tight mb-2">${task.title}</h4>
+                
+                ${task.description ? `<p class="text-xs text-slate-600 mb-3 line-clamp-2">${task.description}</p>` : ''}
+                
+                <div class="flex items-center justify-between mt-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-500 font-medium">${taskId}</span>
+                        <i data-lucide="${priorityStyle.icon}" class="w-3 h-3 ${priorityStyle.color}"></i>
+                        ${dueDateHTML}
                     </div>
-                </div>
-                ` : ''}
-                <div class="flex justify-between items-center text-xs text-gray-400 pt-1">
-                    <span>${createdByText}</span>
-                    <span>${dateString}</span>
+                    ${assignee ? `
+                        <div class="flex items-center" title="${assignee.displayName}">
+                            ${createUserAvatar(assignee, 'h-6 w-6 text-xs')}
+                        </div>
+                    ` : '<div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center"><i data-lucide="user" class="w-3 h-3 text-slate-400"></i></div>'}
                 </div>
             </div>
-            <svg class="icon-grip text-gray-400/50 group-hover:text-gray-500 transition-colors" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="15" r="1"/></svg>
         </div>
     `;
 }
@@ -194,15 +243,51 @@ function createKanbanCardHTML(task) {
 function populateModalDropdowns() {
     dom.statusSelect.innerHTML = STATUSES.map(status => `<option value="${status}">${status}</option>`).join('');
     
-    const validUsers = state.allUsers.filter(user => user.displayName);
-    const userOptions = validUsers.map(user => `<option value="${user.uid}">${user.displayName}</option>`);
-    dom.assigneeSelect.innerHTML = `<option value="">Non assigné</option>` + userOptions.join('');
+    // Clear and populate assignee dropdown
+    dom.assigneeSelect.innerHTML = '<option value="">Non assigné</option>';
+    
+    const currentProject = state.allProjects.find(p => p.id === state.currentProjectId);
+    if (currentProject && currentProject.members && currentProject.members.length > 0) {
+        const projectMembers = state.allUsers.filter(user => 
+            currentProject.members.includes(user.uid)
+        );
+        projectMembers.forEach(user => {
+            const displayName = user.displayName || `User-${user.uid.substring(0, 6)}`;
+            dom.assigneeSelect.innerHTML += `<option value="${user.uid}">${displayName}</option>`;
+        });
+    }
+    
+    // Add priority dropdown if it exists
+    const prioritySelect = document.getElementById('priority');
+    if (prioritySelect) {
+        prioritySelect.innerHTML = `
+            <option value="Low">Basse</option>
+            <option value="Medium" selected>Moyenne</option>
+            <option value="High">Haute</option>
+        `;
+    }
+}
+
+export function openTaskModalFromCalendar(task) {
+    openTaskModal(task);
+}
+
+export function openTaskModalWithDate(date) {
+    openTaskModal(null);
+    const dueDateInput = document.getElementById('due-date');
+    if (dueDateInput) {
+        dueDateInput.value = date;
+    }
 }
 
 function openTaskModal(task = null) {
     dom.taskForm.reset();
     dom.titleError.classList.add('hidden');
     populateModalDropdowns();
+    
+    const dueDateInput = document.getElementById('due-date');
+    const tagsInput = document.getElementById('tags');
+    const tagsContainer = document.getElementById('tags-container');
     
     if (task) {
         dom.modalTitle.textContent = 'Modifier la Tâche';
@@ -212,15 +297,51 @@ function openTaskModal(task = null) {
         dom.descriptionInput.value = task.description || '';
         dom.statusSelect.value = task.status;
         dom.assigneeSelect.value = task.assigneeId || '';
+        
+        const prioritySelect = document.getElementById('priority');
+        if (prioritySelect) {
+            prioritySelect.value = task.priority || 'Medium';
+        }
+        
+        if (dueDateInput && task.dueDate) {
+            dueDateInput.value = task.dueDate;
+        }
+        
+        if (tagsContainer && task.tags) {
+            tagsContainer.innerHTML = task.tags.map(tag => 
+                `<span class="bg-blue-100 text-blue-800 text-xs rounded-full px-2 py-0.5 flex items-center gap-1">
+                    ${tag}
+                    <button type="button" onclick="this.parentElement.remove()" class="hover:text-blue-900">&times;</button>
+                </span>`
+            ).join('');
+        }
+        
         dom.deleteTaskBtn.classList.remove('hidden');
         dom.saveBtnText.textContent = 'Sauvegarder';
     } else {
         dom.modalTitle.textContent = 'Créer une Tâche';
         dom.modalDescription.textContent = 'Remplissez le formulaire pour créer une nouvelle tâche.';
         dom.taskIdInput.value = '';
+        if (tagsContainer) tagsContainer.innerHTML = '';
         dom.deleteTaskBtn.classList.add('hidden');
         dom.saveBtnText.textContent = 'Créer Tâche';
     }
+    
+    // Tags input handler
+    if (tagsInput) {
+        tagsInput.onkeydown = (e) => {
+            if (e.key === 'Enter' && tagsInput.value.trim()) {
+                e.preventDefault();
+                const tag = tagsInput.value.trim();
+                tagsContainer.innerHTML += `<span class="bg-blue-100 text-blue-800 text-xs rounded-full px-2 py-0.5 flex items-center gap-1">
+                    ${tag}
+                    <button type="button" onclick="this.parentElement.remove()" class="hover:text-blue-900">&times;</button>
+                </span>`;
+                tagsInput.value = '';
+            }
+        };
+    }
+    
     dom.taskModal.showModal();
 }
 
@@ -258,11 +379,23 @@ async function handleSubmitTask(e) {
     updateIsSubmitting(true);
     setFormSaving(true);
     
+    const prioritySelect = document.getElementById('priority');
+    const dueDateInput = document.getElementById('due-date');
+    const tagsContainer = document.getElementById('tags-container');
+    
+    // Extract tags from container
+    const tags = Array.from(tagsContainer.querySelectorAll('span')).map(span => 
+        span.textContent.replace('×', '').trim()
+    );
+    
     const taskData = {
         title: dom.titleInput.value,
         description: dom.descriptionInput.value,
         status: dom.statusSelect.value,
-        assigneeId: dom.assigneeSelect.value || '', 
+        assigneeId: dom.assigneeSelect.value || '',
+        priority: prioritySelect ? prioritySelect.value : 'Medium',
+        dueDate: dueDateInput ? dueDateInput.value : '',
+        tags: tags
     };
     const taskId = dom.taskIdInput.value;
     const tasksCollectionPath = `/artifacts/mini-jira-kanban-board/public/data/projects/${state.currentProjectId}/tasks`;
@@ -347,7 +480,7 @@ function handleDragStart(e) {
     const taskId = e.currentTarget.dataset.taskId;
     updateDraggedTaskId(taskId);
     e.dataTransfer.setData('text/plain', taskId);
-    e.currentTarget.classList.add('opacity-50');
+    e.currentTarget.classList.add('opacity-50', 'scale-105', 'rotate-2');
 }
 
 function handleDragOver(e) {
@@ -366,7 +499,7 @@ function handleDrop(e) {
     column.classList.remove('bg-black/10');
     
     const draggedCard = document.querySelector(`[data-task-id="${state.draggedTaskId}"]`);
-    if (draggedCard) draggedCard.classList.remove('opacity-50');
+    if (draggedCard) draggedCard.classList.remove('opacity-50', 'scale-105', 'rotate-2');
     
     if (state.draggedTaskId && newStatus) {
         handleStatusUpdate(state.draggedTaskId, newStatus);

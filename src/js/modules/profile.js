@@ -44,7 +44,11 @@ export function setupUsersListener(checkAndRenderApp) {
 
 
 export function setupUser() {
-    if (!state.currentUser) return;
+    if (!state.currentUser) {
+        dom.userDisplayName.textContent = 'Invité';
+        dom.headerAvatar.innerHTML = '<div class="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-xs font-semibold">G</div>';
+        return;
+    }
     const user = state.currentUser;
     const username = user.displayName || `User-${user.uid.substring(0, 6)}`;
     dom.userDisplayName.textContent = username;
@@ -63,7 +67,7 @@ function openProfileModal() {
     dom.statsDone.textContent = state.allTasks.filter(t => t.assigneeId === uid && t.status === 'Done').length;
 
     dom.profileUsernameInput.value = user.displayName || '';
-    dom.profileEmail.textContent = user.email || 'No email provided.';
+    dom.profileEmail.textContent = user.email || 'Aucun courriel fourni.';
 
     dom.profileModal.showModal();
 }
@@ -98,12 +102,12 @@ async function handleImageUpload(e) {
 
         state.currentUser.photoURL = downloadURL;
 
-        showToast({ title: "Success", description: "Profile photo updated!" });
+        showToast({ title: "Succès", description: "Photo de profil mise à jour !" });
         setupUser();
     } catch (error) {
         console.error("Image upload error:", error.code, error.message);
         const friendlyError = getFriendlyStorageError(error);
-        showToast({ variant: "destructive", title: "Upload Error", description: friendlyError });
+        showToast({ variant: "destructive", title: "Erreur de téléchargement", description: friendlyError });
     } finally {
         setAvatarUploading(false);
         dom.profileImageUpload.value = null;
@@ -116,7 +120,7 @@ async function handleUsernameSave(e) {
 
     const newUsername = dom.profileUsernameInput.value.trim();
     if (newUsername.length < 3) {
-        showToast({ variant: "destructive", title: "Error", description: "Username must be at least 3 characters." });
+        showToast({ variant: "destructive", title: "Erreur", description: "Le nom d'utilisateur doit comporter au moins 3 caractères." });
         return;
     }
 
@@ -129,12 +133,12 @@ async function handleUsernameSave(e) {
 
         state.currentUser.displayName = newUsername;
 
-        showToast({ title: "Success", description: "Username updated!" });
+        showToast({ title: "Succès", description: "Nom d'utilisateur mis à jour !" });
         setupUser();
         closeProfileModal();
     } catch (error) {
         console.error("Username update error:", error);
-        showToast({ variant: "destructive", title: "Error", description: "Could not update username." });
+        showToast({ variant: "destructive", title: "Erreur", description: "Impossible de mettre à jour le nom d'utilisateur." });
     } finally {
         dom.profileSaveUsernameBtn.disabled = false;
     }
@@ -142,20 +146,19 @@ async function handleUsernameSave(e) {
 
 async function handlePasswordReset() {
     if (!state.currentUser || !state.currentUser.email) {
-        showToast({ variant: "destructive", title: "Error", description: "No email associated with this account." });
+        showToast({ variant: "destructive", title: "Erreur", description: "Aucun courriel associé à ce compte." });
         return;
     }
     try {
         await sendPasswordResetEmail(auth, state.currentUser.email);
-        showToast({ title: "Email Sent", description: "Password reset email sent to your inbox." });
+        showToast({ title: "Courriel envoyé", description: "Courriel de réinitialisation envoyé dans votre boîte de réception." });
     } catch (error) {
         console.error("Password reset error:", error);
-        showToast({ variant: "destructive", title: "Error", description: "Could not send reset email." });
+        showToast({ variant: "destructive", title: "Erreur", description: "Impossible d'envoyer le courriel de réinitialisation." });
     }
 }
 
 export function initProfileListeners() {
-    dom.userInfo.addEventListener('click', openProfileModal);
     dom.closeProfileModalBtn.addEventListener('click', closeProfileModal);
     dom.profileUploadBtn.addEventListener('click', () => dom.profileImageUpload.click());
     dom.profileImageUpload.addEventListener('change', handleImageUpload);

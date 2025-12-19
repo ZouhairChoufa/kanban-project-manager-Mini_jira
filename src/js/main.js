@@ -17,6 +17,8 @@ import { initProfileListeners, setupUser, setupUsersListener } from './modules/p
 import { initProjectsListeners, setupProjectsListener, renderCurrentView } from './modules/projects.js';
 import { initKanbanListeners } from './modules/kanban.js';
 import { initDashboardListeners } from './modules/dashboard.js';
+import { renderSidebar } from './modules/navigation.js';
+import { renderHeaderAuthUI, initHeaderAuthListeners } from './modules/headerAuth.js';
 
 let projectsUnsubscribe = null;
 let firestoreUnsubscribe = null;
@@ -35,8 +37,19 @@ onAuthStateChanged(auth, (user) => {
         usersUnsubscribe = setupUsersListener(checkAndRenderApp); 
         projectsUnsubscribe = setupProjectsListener(checkAndRenderApp);
         
+        // Initialize sidebar in global mode
+        renderSidebar('global');
+        renderHeaderAuthUI();
+        
         dom.appContainer.classList.remove('hidden');
         dom.authContainer.classList.add('hidden');
+        
+        // Re-render icons after showing app
+        setTimeout(() => {
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        }, 100);
         
     } else {
         updateCurrentUser(null);
@@ -49,35 +62,37 @@ onAuthStateChanged(auth, (user) => {
         updateHasUsersLoaded(false);
         updateHasProjectsLoaded(false);
         
+        // Show app with public home page
+        setupUser();
+        renderSidebar('public');
+        renderHeaderAuthUI();
         renderCurrentView();
         
-        dom.appContainer.classList.add('hidden');
-        dom.authContainer.classList.remove('hidden');
+        dom.appContainer.classList.remove('hidden');
+        dom.authContainer.classList.add('hidden');
         setLoading(false);
+        
+        // Re-render icons
+        setTimeout(() => {
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        }, 100);
     }
 });
 
-async function handleLogout() {
-    try {
-        await signOut(auth);
-        showToast({ title: "Logged Out", description: "You have been logged out." });
-    } catch (error) {
-        showToast({ variant: "destructive", title: "Error", description: getFriendlyAuthError(error) });
-    }
-}
+
 
 function checkAndRenderApp() {
     if (state.hasUsersLoaded && state.hasProjectsLoaded) {
         console.log("Both users and projects loaded. Rendering app.");
         renderCurrentView();
         setLoading(false);
-    } else {
     }
 }
 
 function setupEventListeners() {
     initAuthListeners();
-    dom.logoutBtn.addEventListener('click', handleLogout);
     
     initProfileListeners();
 
@@ -86,11 +101,18 @@ function setupEventListeners() {
     initKanbanListeners();
 
     initDashboardListeners();
+    
+    initHeaderAuthListeners();
 }
 
 function init() {
     setLoading(true);
     setupEventListeners();
+    
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+    }
 }
 
 init();

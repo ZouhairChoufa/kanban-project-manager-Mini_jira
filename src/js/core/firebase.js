@@ -20,7 +20,9 @@ import {
     query, 
     orderBy,
     setLogLevel,
-    setDoc
+    setDoc,
+    arrayUnion,
+    getDocs
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { 
     getStorage,
@@ -31,13 +33,13 @@ import {
 
 
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID",
-    measurementId: "YOUR_MEASUREMENT_ID"
+    apiKey: "AIzaSyCoc1m-IVplJRK6-1TLeKFK-meEAFECVEw",
+    authDomain: "mini-jira-kanban-board.firebaseapp.com",
+    projectId: "mini-jira-kanban-board",
+    storageBucket: "mini-jira-kanban-board.firebasestorage.app",
+    messagingSenderId: "706807233151",
+    appId: "1:706807233151:web:f4ca57d2a9604ab3871d4a",
+    measurementId: "G-STE06L3GV5"
 };
 export const appId = firebaseConfig.projectId || 'default-kanban-app';
 
@@ -45,7 +47,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
-setLogLevel('debug');
+
+// Set to 'silent' for production, 'error' for errors only, 'debug' for verbose logs
+setLogLevel('error');
 
 export { app, auth, db, storage };
 
@@ -68,7 +72,9 @@ export {
     Timestamp, 
     query, 
     orderBy,
-    setDoc
+    setDoc,
+    arrayUnion,
+    getDocs
 };
 
 export { 

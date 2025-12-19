@@ -26,26 +26,28 @@ export function showToast({ title, description, variant = "default" }) {
             : "bg-white border-gray-200 text-gray-800"
     }`;
     
+    const iconName = variant === "destructive" ? "alert-circle" : "check-circle";
+    const iconColor = variant === "destructive" ? "text-red-400" : "text-green-400";
+    
     toast.innerHTML = `
         <div class="flex items-start gap-3">
             <div class="flex-shrink-0">
-                <svg class="w-5 h-5 ${variant === "destructive" ? "text-red-400" : "text-green-400"}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${variant === "destructive" ? "M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" : "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"}"></path>
-                </svg>
+                <i data-lucide="${iconName}" class="w-5 h-5 ${iconColor}"></i>
             </div>
             <div class="flex-1">
                 <h4 class="text-sm font-medium">${title}</h4>
                 <p class="text-sm opacity-90 mt-1">${description}</p>
             </div>
             <button class="flex-shrink-0 text-gray-400 hover:text-gray-600" onclick="this.parentElement.parentElement.remove()">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
+                <i data-lucide="x" class="w-4 h-4"></i>
             </button>
         </div>
     `;
     
     dom.toastContainer.appendChild(toast);
+    
+    // Render the new Lucide icons
+    renderIcons();
     
     setTimeout(() => {
         toast.classList.add('animate-fade-out');
@@ -229,23 +231,41 @@ export function filterTasksByCreator(tasks, creatorId) {
 
 export function getFriendlyStorageError(error) {
     const errorMessages = {
-        'storage/unauthorized': 'You do not have permission to upload files.',
-        'storage/canceled': 'Upload was canceled.',
-        'storage/quota-exceeded': 'Storage quota exceeded.',
-        'storage/invalid-format': 'Invalid file format.',
-        'storage/server-file-wrong-size': 'File size does not match expected size.',
-        'storage/object-not-found': 'File not found.',
-        'storage/bucket-not-found': 'Storage bucket not found.',
-        'storage/project-not-found': 'Project not found.',
-        'storage/invalid-checksum': 'File integrity check failed.',
-        'storage/retry-limit-exceeded': 'Maximum retry attempts exceeded.',
-        'storage/invalid-event-name': 'Invalid event name.',
-        'storage/invalid-url': 'Invalid URL.',
-        'storage/invalid-argument': 'Invalid argument.',
-        'storage/no-default-bucket': 'No default bucket configured.',
-        'storage/cannot-slice-blob': 'Cannot slice blob.',
-        'storage/server-error': 'Server error occurred.',
-        'storage/unknown': 'An unknown error occurred.'
+        'storage/unauthorized': 'Vous n\'avez pas la permission de télécharger des fichiers.',
+        'storage/canceled': 'Téléchargement annulé.',
+        'storage/quota-exceeded': 'Quota de stockage dépassé.',
+        'storage/invalid-format': 'Format de fichier invalide.',
+        'storage/server-file-wrong-size': 'La taille du fichier ne correspond pas à la taille attendue.',
+        'storage/object-not-found': 'Fichier introuvable.',
+        'storage/bucket-not-found': 'Compartiment de stockage introuvable.',
+        'storage/project-not-found': 'Projet introuvable.',
+        'storage/invalid-checksum': 'Échec de la vérification de l\'intégrité du fichier.',
+        'storage/retry-limit-exceeded': 'Nombre maximal de tentatives dépassé.',
+        'storage/invalid-event-name': 'Nom d\'événement invalide.',
+        'storage/invalid-url': 'URL invalide.',
+        'storage/invalid-argument': 'Argument invalide.',
+        'storage/no-default-bucket': 'Aucun compartiment par défaut configuré.',
+        'storage/cannot-slice-blob': 'Impossible de découper le blob.',
+        'storage/server-error': 'Erreur serveur survenue.',
+        'storage/unknown': 'Une erreur inconnue est survenue.'
     };
-    return errorMessages[error.code] || error.message || 'An error occurred during upload.';
+    return errorMessages[error.code] || error.message || 'Une erreur est survenue lors du téléchargement.';
+}
+
+// Icon utilities for Lucide
+export function createIcon(name, classes = 'icon-md') {
+    const iconElement = document.createElement('i');
+    iconElement.setAttribute('data-lucide', name);
+    iconElement.className = classes;
+    return iconElement;
+}
+
+export function renderIcons() {
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+    }
+}
+
+export function getIconHTML(name, classes = 'icon-md') {
+    return `<i data-lucide="${name}" class="${classes}"></i>`;
 }
